@@ -1,17 +1,31 @@
 package main
 
 import (
-	"log"
+	"os"
 
-	"github.com/gofiber/fiber/v2"
+	hc "github.com/AntonioDaria/order-packs-calculator/internal/handler"
+	"github.com/AntonioDaria/order-packs-calculator/internal/router"
+	"github.com/AntonioDaria/order-packs-calculator/internal/server"
+
+	"github.com/rs/zerolog"
 )
 
 func main() {
-	app := fiber.New()
+	// Set up logger
+	logger := zerolog.New(os.Stderr).Level(zerolog.DebugLevel).With().Timestamp().Logger()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, Antonio 👋")
-	})
+	// Initialize handlers
+	healthcheckHandler := hc.NewHandler(logger)
 
-	log.Fatal(app.Listen(":3000"))
+	// Initialize router and setup routes
+	handlers := &router.Handlers{
+		HealthcheckHandler: healthcheckHandler,
+	}
+	app := router.New(handlers)
+
+	// Initialize and run server
+	httpServer := server.New(logger, app)
+	if err := httpServer.Run(); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to run server")
+	}
 }
