@@ -4,6 +4,7 @@ go 1.23.1
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/golang/mock v1.6.0
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.10.0
 )

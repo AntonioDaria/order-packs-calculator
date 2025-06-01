@@ -1,7 +1,7 @@
 package service
 
 import (
-	"order-packs-calculator/internal/repository"
+	"github.com/AntonioDaria/order-packs-calculator/internal/repository"
 )
 
 type PackCalculatorService struct {
@@ -13,3 +13,6 @@ func NewPackCalculatorService(repo repository.PackSizeRepository) *PackCalculato
 		packRepo: repo,
 	}
 }
+
+// Compile-time assertion to ensure PackCalculatorService implements PackCalculator interface
+var _ PackCalculator = (*PackCalculatorService)(nil)
