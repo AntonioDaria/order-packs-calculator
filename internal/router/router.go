@@ -1,19 +1,26 @@
 package router
 
 import (
-	hc "github.com/AntonioDaria/order-packs-calculator/internal/handler"
+	h "github.com/AntonioDaria/order-packs-calculator/internal/handler"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 type Handlers struct {
-	HealthcheckHandler *hc.Handler
+	PackCalculatorHandler *h.PackCalculatorHandler
 }
 
 func New(handlers *Handlers) *fiber.App {
-	app := fiber.New()
+	router := fiber.New()
 
-	app.Get("/api/healthcheck", handlers.HealthcheckHandler.Check)
+	// Add Recover middleware to handle panics
+	router.Use(recover.New(recover.Config{
+		EnableStackTrace: true,
+	}))
 
-	return app
+	// pack calculator route
+	router.Post("/api/calculate", handlers.PackCalculatorHandler.Calculate)
+
+	return router
 }

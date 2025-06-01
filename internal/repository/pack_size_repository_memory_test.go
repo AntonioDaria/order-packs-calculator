@@ -2,14 +2,19 @@ package repository
 
 import (
 	"context"
+	"os"
 	"testing"
+
+	"github.com/rs/zerolog"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInMemoryPackSizeRepository_GetAll(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 	initial := []int{100, 50, 200}
-	repo := NewInMemoryPackSizeRepository(initial)
+	repo := NewInMemoryPackSizeRepository(initial, logger)
 
 	packs, err := repo.GetAll(context.Background())
 	assert.NoError(t, err)
@@ -22,7 +27,9 @@ func TestInMemoryPackSizeRepository_GetAll(t *testing.T) {
 }
 
 func TestInMemoryPackSizeRepository_ReplaceAll(t *testing.T) {
-	repo := NewInMemoryPackSizeRepository([]int{100})
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
+	repo := NewInMemoryPackSizeRepository([]int{100}, logger)
 
 	err := repo.ReplaceAll(context.Background(), []int{30, 70, 10})
 	assert.NoError(t, err)
@@ -32,7 +39,9 @@ func TestInMemoryPackSizeRepository_ReplaceAll(t *testing.T) {
 }
 
 func TestInMemoryPackSizeRepository_ReplaceAll_EmptyInput(t *testing.T) {
-	repo := NewInMemoryPackSizeRepository([]int{100})
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
+	repo := NewInMemoryPackSizeRepository([]int{100}, logger)
 
 	err := repo.ReplaceAll(context.Background(), []int{})
 	assert.Error(t, err)

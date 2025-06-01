@@ -6,19 +6,27 @@ import (
 	"math"
 )
 
+var (
+	ErrInvalidItemCount       = errors.New("itemCount must be greater than 0")
+	ErrNoValidPackCombination = errors.New("no valid pack combination found")
+)
+
 func (s *PackCalculatorService) CalculatePacks(ctx context.Context, itemCount int) (map[int]int, int, error) {
 	if itemCount <= 0 {
-		return nil, 0, errors.New("itemCount must be greater than 0")
+		s.Logger.Warn().Int("itemCount", itemCount).Msg("Invalid item count received")
+		return nil, 0, ErrInvalidItemCount
 	}
 
 	packSizes, err := s.packRepo.GetAll(ctx)
 	if err != nil {
+		s.Logger.Error().Err(err).Msg("Failed to retrieve pack sizes")
 		return nil, 0, err
 	}
 
 	bestPacks, minTotal := findOptimalPackCombination(itemCount, packSizes)
 	if bestPacks == nil {
-		return nil, 0, errors.New("no valid pack combination found")
+		s.Logger.Info().Int("itemCount", itemCount).Msg("No valid pack combination found")
+		return nil, 0, ErrNoValidPackCombination
 	}
 
 	return bestPacks, minTotal, nil

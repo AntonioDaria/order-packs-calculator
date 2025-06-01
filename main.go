@@ -4,8 +4,10 @@ import (
 	"os"
 
 	hc "github.com/AntonioDaria/order-packs-calculator/internal/handler"
+	"github.com/AntonioDaria/order-packs-calculator/internal/repository"
 	"github.com/AntonioDaria/order-packs-calculator/internal/router"
 	"github.com/AntonioDaria/order-packs-calculator/internal/server"
+	"github.com/AntonioDaria/order-packs-calculator/internal/service"
 
 	"github.com/rs/zerolog"
 )
@@ -14,12 +16,18 @@ func main() {
 	// Set up logger
 	logger := zerolog.New(os.Stderr).Level(zerolog.DebugLevel).With().Timestamp().Logger()
 
-	// Initialize handlers
-	healthcheckHandler := hc.NewHandler(logger)
+	// Initialize repository
+	packCalculatorRepo := repository.NewInMemoryPackSizeRepository(nil, logger)
 
-	// Initialize router and setup routes
+	// Initialize services
+	packService := service.NewPackCalculatorService(packCalculatorRepo, logger)
+
+	// Initialize handlers
+	packCalculatorHandler := hc.NewPackCalculatorHandler(packService, logger)
+
+	// Group handlers
 	handlers := &router.Handlers{
-		HealthcheckHandler: healthcheckHandler,
+		PackCalculatorHandler: packCalculatorHandler,
 	}
 	app := router.New(handlers)
 

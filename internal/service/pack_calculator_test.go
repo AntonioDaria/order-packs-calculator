@@ -3,14 +3,18 @@ package service
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/AntonioDaria/order-packs-calculator/internal/repository/mock"
 	"github.com/golang/mock/gomock"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCalculatePacks_ExactMatchHappyPath(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -22,7 +26,7 @@ func TestCalculatePacks_ExactMatchHappyPath(t *testing.T) {
 		Return([]int{250, 500, 1000}, nil).
 		Times(1)
 
-	service := NewPackCalculatorService(mockRepo)
+	service := NewPackCalculatorService(mockRepo, logger)
 
 	result, total, err := service.CalculatePacks(context.Background(), 1750)
 
@@ -34,6 +38,8 @@ func TestCalculatePacks_ExactMatchHappyPath(t *testing.T) {
 }
 
 func TestCalculatePacks_EdgeCase_WithMockRepo(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 	// Setup gomock controller
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -48,7 +54,7 @@ func TestCalculatePacks_EdgeCase_WithMockRepo(t *testing.T) {
 		Times(1)
 
 	// Initialize service with mock repo
-	service := NewPackCalculatorService(mockRepo)
+	service := NewPackCalculatorService(mockRepo, logger)
 
 	// Call the method with a large number that is an edge case
 	result, total, err := service.CalculatePacks(context.Background(), 500000)
@@ -61,6 +67,8 @@ func TestCalculatePacks_EdgeCase_WithMockRepo(t *testing.T) {
 }
 
 func TestCalculatePacks_OverageRequired(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -72,7 +80,7 @@ func TestCalculatePacks_OverageRequired(t *testing.T) {
 		Return([]int{250, 500, 1000, 2000, 5000}, nil).
 		Times(1)
 
-	service := NewPackCalculatorService(mockRepo)
+	service := NewPackCalculatorService(mockRepo, logger)
 
 	result, total, err := service.CalculatePacks(context.Background(), 12001)
 
@@ -83,11 +91,13 @@ func TestCalculatePacks_OverageRequired(t *testing.T) {
 }
 
 func TestCalculatePacks_InvalidItemCount(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mock.NewMockPackSizeRepository(ctrl)
-	service := NewPackCalculatorService(mockRepo)
+	service := NewPackCalculatorService(mockRepo, logger)
 
 	_, _, err := service.CalculatePacks(context.Background(), 0)
 
@@ -96,6 +106,8 @@ func TestCalculatePacks_InvalidItemCount(t *testing.T) {
 }
 
 func TestCalculatePacks_RepoError(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -104,7 +116,7 @@ func TestCalculatePacks_RepoError(t *testing.T) {
 		GetAll(gomock.Any()).
 		Return(nil, errors.New("db error"))
 
-	service := NewPackCalculatorService(mockRepo)
+	service := NewPackCalculatorService(mockRepo, logger)
 
 	_, _, err := service.CalculatePacks(context.Background(), 10)
 
