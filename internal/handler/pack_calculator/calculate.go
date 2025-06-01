@@ -1,25 +1,11 @@
-package handler
+package pack_calculator
 
 import (
-	"context"
 	"sort"
 
 	pack_calculator_service "github.com/AntonioDaria/order-packs-calculator/internal/service/pack_calculator"
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog"
 )
-
-type PackCalculatorHandler struct {
-	service pack_calculator_service.PackCalculator
-	logger  zerolog.Logger
-}
-
-func NewPackCalculatorHandler(s pack_calculator_service.PackCalculator, logger zerolog.Logger) *PackCalculatorHandler {
-	return &PackCalculatorHandler{
-		service: s,
-		logger:  logger,
-	}
-}
 
 type CalculateRequest struct {
 	Items int `json:"items"`
@@ -39,7 +25,7 @@ func (h *PackCalculatorHandler) Calculate(c *fiber.Ctx) error {
 		})
 	}
 
-	result, total, err := h.service.CalculatePacks(context.Background(), req.Items)
+	result, total, err := h.service.CalculatePacks(c.Context(), req.Items)
 	if err != nil {
 		switch err {
 		case pack_calculator_service.ErrInvalidItemCount:

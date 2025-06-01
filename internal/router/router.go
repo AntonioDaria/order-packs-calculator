@@ -1,14 +1,15 @@
 package router
 
 import (
-	h "github.com/AntonioDaria/order-packs-calculator/internal/handler"
-
+	pc "github.com/AntonioDaria/order-packs-calculator/internal/handler/pack_calculator"
+	cfg "github.com/AntonioDaria/order-packs-calculator/internal/handler/pack_config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 type Handlers struct {
-	PackCalculatorHandler *h.PackCalculatorHandler
+	PackCalculatorHandler *pc.PackCalculatorHandler
+	PackConfigHandler     *cfg.PackConfigHandler
 }
 
 func New(handlers *Handlers) *fiber.App {
@@ -19,8 +20,12 @@ func New(handlers *Handlers) *fiber.App {
 		EnableStackTrace: true,
 	}))
 
-	// pack calculator route
+	// Pack calculator route
 	router.Post("/api/calculate", handlers.PackCalculatorHandler.Calculate)
+
+	// Pack config routes
+	router.Get("/api/packs", handlers.PackConfigHandler.GetPacks)
+	router.Post("/api/packs", handlers.PackConfigHandler.UpdatePacks)
 
 	return router
 }

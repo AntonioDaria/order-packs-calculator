@@ -1,4 +1,4 @@
-package handler
+package pack_calculator
 
 import (
 	"bytes"

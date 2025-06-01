@@ -8,6 +8,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var (
+	ErrEmptyPackList   = errors.New("pack size list cannot be empty")
+	ErrInvalidPackSize = errors.New("pack sizes must be positive integers")
+)
+
 //go:generate mockgen -source=pack_config.go -destination=mock/pack_config_mock.go -package=mocks
 type PackConfig interface {
 	GetPackSizes(ctx context.Context) ([]int, error)
@@ -40,13 +45,13 @@ func (s *PackConfigService) GetPackSizes(ctx context.Context) ([]int, error) {
 func (s *PackConfigService) UpdatePackSizes(ctx context.Context, sizes []int) error {
 	if len(sizes) == 0 {
 		s.Logger.Warn().Msg("Attempted to update pack sizes with empty list")
-		return errors.New("pack size list cannot be empty")
+		return ErrEmptyPackList
 	}
 
 	for _, size := range sizes {
 		if size <= 0 {
 			s.Logger.Warn().Int("invalid_pack_size", size).Msg("Invalid pack size provided")
-			return errors.New("pack sizes must be positive integers")
+			return ErrInvalidPackSize
 		}
 	}
 

@@ -3,11 +3,14 @@ package main
 import (
 	"os"
 
-	hc "github.com/AntonioDaria/order-packs-calculator/internal/handler"
+	pc "github.com/AntonioDaria/order-packs-calculator/internal/handler/pack_calculator"
+	cfg "github.com/AntonioDaria/order-packs-calculator/internal/handler/pack_config"
+
 	"github.com/AntonioDaria/order-packs-calculator/internal/repository"
 	"github.com/AntonioDaria/order-packs-calculator/internal/router"
 	"github.com/AntonioDaria/order-packs-calculator/internal/server"
 	pack_calculator_service "github.com/AntonioDaria/order-packs-calculator/internal/service/pack_calculator"
+	pack_config_service "github.com/AntonioDaria/order-packs-calculator/internal/service/pack_config"
 
 	"github.com/rs/zerolog"
 )
@@ -21,13 +24,16 @@ func main() {
 
 	// Initialize services
 	packService := pack_calculator_service.NewPackCalculatorService(packCalculatorRepo, logger)
+	packConfigService := pack_config_service.NewPackConfigService(packCalculatorRepo, logger)
 
 	// Initialize handlers
-	packCalculatorHandler := hc.NewPackCalculatorHandler(packService, logger)
+	packCalculatorHandler := pc.NewPackCalculatorHandler(packService, logger)
+	packConfigHandler := cfg.NewPackConfigHandler(packConfigService, logger)
 
 	// Group handlers
 	handlers := &router.Handlers{
 		PackCalculatorHandler: packCalculatorHandler,
+		PackConfigHandler:     packConfigHandler,
 	}
 	app := router.New(handlers)
 
