@@ -1,4 +1,4 @@
-package service
+package pack_calculator
 
 import (
 	"context"

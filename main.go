@@ -7,7 +7,7 @@ import (
 	"github.com/AntonioDaria/order-packs-calculator/internal/repository"
 	"github.com/AntonioDaria/order-packs-calculator/internal/router"
 	"github.com/AntonioDaria/order-packs-calculator/internal/server"
-	"github.com/AntonioDaria/order-packs-calculator/internal/service"
+	pack_calculator_service "github.com/AntonioDaria/order-packs-calculator/internal/service/pack_calculator"
 
 	"github.com/rs/zerolog"
 )
@@ -20,7 +20,7 @@ func main() {
 	packCalculatorRepo := repository.NewInMemoryPackSizeRepository(nil, logger)
 
 	// Initialize services
-	packService := service.NewPackCalculatorService(packCalculatorRepo, logger)
+	packService := pack_calculator_service.NewPackCalculatorService(packCalculatorRepo, logger)
 
 	// Initialize handlers
 	packCalculatorHandler := hc.NewPackCalculatorHandler(packService, logger)

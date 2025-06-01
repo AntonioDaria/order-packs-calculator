@@ -4,17 +4,17 @@ import (
 	"context"
 	"sort"
 
-	"github.com/AntonioDaria/order-packs-calculator/internal/service"
+	pack_calculator_service "github.com/AntonioDaria/order-packs-calculator/internal/service/pack_calculator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 )
 
 type PackCalculatorHandler struct {
-	service service.PackCalculator
+	service pack_calculator_service.PackCalculator
 	logger  zerolog.Logger
 }
 
-func NewPackCalculatorHandler(s service.PackCalculator, logger zerolog.Logger) *PackCalculatorHandler {
+func NewPackCalculatorHandler(s pack_calculator_service.PackCalculator, logger zerolog.Logger) *PackCalculatorHandler {
 	return &PackCalculatorHandler{
 		service: s,
 		logger:  logger,
@@ -42,10 +42,10 @@ func (h *PackCalculatorHandler) Calculate(c *fiber.Ctx) error {
 	result, total, err := h.service.CalculatePacks(context.Background(), req.Items)
 	if err != nil {
 		switch err {
-		case service.ErrInvalidItemCount:
+		case pack_calculator_service.ErrInvalidItemCount:
 			h.logger.Warn().Err(err).Int("items", req.Items).Msg("Invalid item count from client")
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-		case service.ErrNoValidPackCombination:
+		case pack_calculator_service.ErrNoValidPackCombination:
 			h.logger.Info().Err(err).Int("items", req.Items).Msg("No valid pack combination found")
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
 		default:
