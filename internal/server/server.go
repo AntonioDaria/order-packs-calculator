@@ -40,13 +40,15 @@ func (s *Server) Run() error {
 		}
 	}()
 
-	// Listen for shutdown signals
+	// Set up channel to listen for shutdown signals
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
+	// Block until a signal is received
 	<-osSignals
 	s.logger.Info().Msg("🔴 Shutting down HTTP Server")
 
+	// Create a context with timeout for graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
