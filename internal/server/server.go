@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,23 +25,28 @@ func New(logger zerolog.Logger, httpRouter *fiber.App) *Server {
 }
 
 func (s *Server) Run() error {
+	// Get port from env (Heroku provides $PORT)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000" // fallback for local dev
+	}
+	addr := fmt.Sprintf(":%s", port)
+
 	// Run the server in a separate goroutine
 	go func() {
-		s.logger.Info().Msg("🚀 Starting HTTP Server")
-		if err := s.app.Listen(":3000"); err != nil {
+		s.logger.Info().Str("port", port).Msg("🚀 Starting HTTP Server")
+		if err := s.app.Listen(addr); err != nil {
 			s.logger.Fatal().Err(err).Msg("Server failure")
 		}
 	}()
 
-	// Set up channel to listen for shutdown signals
+	// Listen for shutdown signals
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	// Block until a signal is received
 	<-osSignals
 	s.logger.Info().Msg("🔴 Shutting down HTTP Server")
 
-	// Create a context with timeout for graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
