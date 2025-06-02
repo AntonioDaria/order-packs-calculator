@@ -19,8 +19,11 @@ func main() {
 	// Set up logger
 	logger := zerolog.New(os.Stderr).Level(zerolog.DebugLevel).With().Timestamp().Logger()
 
+	// default initial pack sizes
+	initialPackSizes := []int{250, 500, 1000}
+
 	// Initialize repository
-	packCalculatorRepo := repository.NewInMemoryPackSizeRepository(nil, logger)
+	packCalculatorRepo := repository.NewInMemoryPackSizeRepository(initialPackSizes, logger)
 
 	// Initialize services
 	packService := pack_calculator_service.NewPackCalculatorService(packCalculatorRepo, logger)
@@ -36,6 +39,9 @@ func main() {
 		PackConfigHandler:     packConfigHandler,
 	}
 	app := router.New(handlers)
+
+	// Set up static file serving for the frontend
+	app.Static("/", "./static") // this serves index.html at http://localhost:3000/
 
 	// Initialize and run server
 	httpServer := server.New(logger, app)

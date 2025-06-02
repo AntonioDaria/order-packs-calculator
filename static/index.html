@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pack Calculator</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
+    label, input, button { display: block; margin: 0.5rem 0; }
+    .result { margin-top: 1.5rem; padding: 1rem; background: #f3f3f3; }
+  </style>
+</head>
+<body>
+  <h1>Pack Calculator</h1>
+
+  <h2>Set Available Pack Sizes</h2>
+  <form id="packForm">
+    <label for="packSizes">Pack Sizes (comma-separated):</label>
+    <input type="text" id="packSizes" placeholder="e.g. 250,500,1000">
+    <button type="submit">Update Pack Sizes</button>
+  </form>
+
+  <h2>Calculate Packs for Order</h2>
+  <form id="calcForm">
+    <label for="items">Items to ship:</label>
+    <input type="number" id="items" placeholder="e.g. 263">
+    <button type="submit">Calculate</button>
+  </form>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    const resultDiv = document.getElementById('result');
+
+    // Pre-fill current pack sizes on load
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+        const res = await fetch('/api/packs');
+        if (res.ok) {
+            const sizes = await res.json();
+            document.getElementById('packSizes').value = sizes.join(', ');
+        }
+        } catch (err) {
+        console.error("Failed to fetch pack sizes", err);
+        }
+    });
+
+    document.getElementById('packForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('packSizes').value;
+      const sizes = input.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+      const res = await fetch('/api/packs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sizes)
+      });
+      const data = await res.json();
+      resultDiv.innerText = res.ok ? `✅ Pack sizes updated: ${data.sizes.join(', ')}` : `❌ Error: ${data.error}`;
+    });
+
+    document.getElementById('calcForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const items = parseInt(document.getElementById('items').value);
+      const res = await fetch('/api/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const packList = data.packs.map(p => `${p.quantity} x ${p.size}`).join(', ');
+        resultDiv.innerText = `✅ Total: ${data.total} — Packs: ${packList}`;
+      } else {
+        resultDiv.innerText = `❌ Error: ${data.error}`;
+      }
+    });
+  </script>
+</body>
+</html>
